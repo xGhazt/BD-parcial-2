@@ -1,10 +1,16 @@
 import express from "express";
-import * as cartCtrl from "../controllers/cart.controller.js";
+import { authRequired } from "../middlewares/auth.middleware.js";
+import { addItem, getCart, updateItemQty, removeItem, getCartTotal } from "../controllers/cart.controller.js";
 
 const router = express.Router();
 
-// TODO: proteger con auth middleware cuando esté implementado
-router.get("/:userId", cartCtrl.getCart);
-router.post("/:userId", cartCtrl.addItem);
+router.use(authRequired); // todas las rutas requieren auth
+
+router.get("/", getCart); 
+router.get("/total", getCartTotal); 
+
+router.post("/item", addItem); 
+router.patch("/item", updateItemQty);
+router.delete("/item", removeItem); 
 
 export default router;

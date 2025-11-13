@@ -5,12 +5,14 @@ import {
   updateCategory,
   deleteCategory,
 } from "../controllers/category.controller.js";
+import { authRequired, adminRequired } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", createCategory);
+
+router.post("/", authRequired, adminRequired, createCategory);
 router.get("/", getCategories);
-router.patch("/:id", updateCategory);
-router.delete("/:id", deleteCategory);
+router.patch("/:id", authRequired, adminRequired, updateCategory);
+router.delete("/:id", authRequired, adminRequired, deleteCategory);
 
 export default router;

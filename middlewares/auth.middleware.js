@@ -2,25 +2,26 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-/**
- * Middleware placeholder para autenticación JWT.
- * TODO: completar validación real (verificar token, cargar usuario en req.user)
- */
+const JWT_SECRET = process.env.JWT_SECRET;
+
 export const authRequired = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: "No token provided" });
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ success: false, error: "Token no provisto" });
+  }
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    req.user = { id: decoded.userId, role: decoded.role };
     return next();
   } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ success: false, error: "Token inválido o expirado" });
   }
 };
 
 export const adminRequired = (req, res, next) => {
-  // TODO: verificar req.user.role === "admin"
-  if (req.user && req.user.role === "admin") return next();
-  return res.status(403).json({ error: "Admin role required" });
+  if (!req.user) return res.status(401).json({ success: false, error: "No autenticado" });
+  if (req.user.role !== "admin") return res.status(403).json({ success: false, error: "Admin role required" });
+  return next();
 };
